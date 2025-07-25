@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: atmosfera_backend
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/atmosfera
+      - REDIS_URL=redis://redis:6379/0
+      - OWM_API_KEY=${OWM_API_KEY}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  ingestion:
+    build: ./ingestion
+    container_name: atmosfera_ingestion
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/atmosfera
+      - REDIS_URL=redis://redis:6379/0
+      - OWM_API_KEY=${OWM_API_KEY}
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build: ./frontend
+    container_name: atmosfera_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: atmosfera_db
+    environment:
+      - POSTGRES_DB=atmosfera
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    container_name: atmosfera_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  db_data:
