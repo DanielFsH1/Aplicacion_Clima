@@ -1,0 +1,5 @@
+httpx
+APScheduler
+python-dotenv
+SQLAlchemy
+asyncpg
